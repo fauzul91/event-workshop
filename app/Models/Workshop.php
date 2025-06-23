@@ -12,7 +12,7 @@ class Workshop extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'slug', 'thumbnail', 'venue_thumbnail', 'bg_map', 'address', 'about', 'price', 'is_open', 'has_started', 'time_at', 'category_id', 'workshop_instructor_id' 
+        'name', 'slug', 'thumbnail', 'venue_thumbnail', 'bg_map', 'address', 'about', 'price', 'is_open', 'has_started', 'time_at', 'started_at', 'category_id', 'workshop_instructor_id' 
     ];
     protected $casts = [
         'started_at' => 'date',
@@ -32,13 +32,13 @@ class Workshop extends Model
     {
         return $this->hasMany(WorkshopBenefit::class);
     }
-    public function participans()
+    public function participants()
     {
         return $this->hasMany(WorkshopParticipant::class);
     }
     public function setNameAttribute($value)
     {
-        $this->attributes('name') = $value;
-        $this->attributes('slug') = Str::slug($value);
+        $this->attributes['name'] = $value;
+        $this->attributes['slug'] = Str::slug($value);
     }
 }

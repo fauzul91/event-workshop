@@ -2,16 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\WorkshopInstructorResource\Pages;
-use App\Filament\Resources\WorkshopInstructorResource\RelationManagers;
-use App\Models\WorkshopInstructor;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use App\Models\WorkshopInstructor;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\WorkshopInstructorResource\Pages;
+use App\Filament\Resources\WorkshopInstructorResource\RelationManagers;
 
 class WorkshopInstructorResource extends Resource
 {
@@ -23,7 +27,15 @@ class WorkshopInstructorResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('occupation')
+                    ->required()
+                    ->maxLength(255),
+                FileUpload::make('avatar')
+                    ->image()
+                    ->required()                    
             ]);
     }
 
@@ -31,7 +43,9 @@ class WorkshopInstructorResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('occupation')->searchable(),
+                ImageColumn::make('avatar'),
             ])
             ->filters([
                 //

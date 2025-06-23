@@ -22,7 +22,7 @@ class BookingTransaction extends Model
 
         return $randomString;
     }
-    public function participans()
+    public function participants()
     {
         return $this->hasMany(WorkshopParticipant::class);
     }

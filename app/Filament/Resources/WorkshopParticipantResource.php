@@ -2,16 +2,19 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\WorkshopParticipantResource\Pages;
-use App\Filament\Resources\WorkshopParticipantResource\RelationManagers;
-use App\Models\WorkshopParticipant;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use App\Models\WorkshopParticipant;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\WorkshopParticipantResource\Pages;
+use App\Filament\Resources\WorkshopParticipantResource\RelationManagers;
 
 class WorkshopParticipantResource extends Resource
 {
@@ -23,7 +26,25 @@ class WorkshopParticipantResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('occupation')
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('email')
+                    ->required()
+                    ->maxLength(255),
+                Select::make('workshop_id')
+                    ->relationship('workshop', 'name')
+                    ->required()
+                    ->preload()
+                    ->searchable(),
+                Select::make('booking_transaction_id')
+                    ->relationship('bookingTransaction', 'booking_trx_id')
+                    ->required()
+                    ->preload()
+                    ->searchable(),
             ]);
     }
 
@@ -31,7 +52,11 @@ class WorkshopParticipantResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name'),
+                TextColumn::make('occupation'),
+                TextColumn::make('email'),
+                TextColumn::make('workshop.name'),
+                TextColumn::make('bookingTransaction.booking_trx_id'),
             ])
             ->filters([
                 //
