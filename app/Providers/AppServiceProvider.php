@@ -7,7 +7,7 @@ use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\WorkshopRepositoryInterface;
 use App\Repositories\WorkshopRepository;
-use CategoryRepository;
+use App\Repositories\CategoryRepository;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
