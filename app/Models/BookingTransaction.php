@@ -13,7 +13,7 @@ class BookingTransaction extends Model
     protected $fillable = [
         'name', 'email', 'phone', 'customer_bank_name', 'customer_bank_account', 'customer_bank_number', 'booking_trx_id', 'proof', 'quantity', 'total_amount', 'is_paid', 'workshop_id'
     ];
-    public function generateUniqueTrxId()
+    public static function generateUniqueTrxId()
     {
         $prefix = 'AKTIVBWA';
         do {

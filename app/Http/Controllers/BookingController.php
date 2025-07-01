@@ -22,7 +22,7 @@ class BookingController extends Controller
 
     public function booking(Workshop $workshop)
     {
-        return view('booking.booking', compact($workshop));
+        return view('booking.booking', compact('workshop'));
     }
     public function bookingStore(StoreBookingRequest $request, Workshop $workshop)
     {
@@ -32,21 +32,22 @@ class BookingController extends Controller
         try {
             $this->bookingService->storeBooking($validated);
             return redirect()->route('front.payment');
-        } catch (\Exception $e)
-        {
-            return redirect()->back()->withErrors(['error' => 'Unable to create booking. Please try again!']);
+        } catch (\Exception $e) {
+            Log::error('Booking Gagal: ' . $e->getMessage()); // simpan ke log
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Booking gagal: ' . $e->getMessage()]);
         }
     }
     public function payment()
     {
-        if ($this->bookingService->isBookingSessionAvailable()) {
+        if (!$this->bookingService->isBookingSessionAvailable()) {
             return redirect()->route('front.index');
         }
 
         $data = $this->bookingService->getBookingDetails();
 
-        if (!$data)
-        {
+        if (!$data) {
             return redirect()->route('front.index');
         }
 
@@ -59,8 +60,8 @@ class BookingController extends Controller
         try {
             $bookingTransactionId = $this->bookingService->finalizeBookingAndPayment($validated);
             return redirect()->route('front.booking_finished', $bookingTransactionId);
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
+            dd($e->getMessage());
             Log::error('Payment storage failed: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Unable to store payment details. Please try again.']);
         }

@@ -70,7 +70,7 @@ class BookingService
 
         Log::info('Order Data:', $orderData);
 
-        if (isset($orderData['total_amount']))
+        if (!isset($orderData['total_amount']))
         {
             throw new \Exception('Total amount is missing from the order data.');
         }
@@ -104,7 +104,7 @@ class BookingService
                     'email' => $participant['email'],
                     'occupation' => $participant['occupation'],
                     'workshop_id' => $bookingTransaction->workshop_id,
-                    'booking_trx_id' => $bookingTransaction->id,
+                    'booking_transaction_id' => $bookingTransaction->id,
                 ]);
             }
 

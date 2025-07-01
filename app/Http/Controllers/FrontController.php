@@ -22,10 +22,10 @@ class FrontController extends Controller
     }
     public function details(Workshop $workshop)
     {
-        return view('front.details', compact($workshop));
+        return view('front.details', compact('workshop'));
     }
     public function category(Category $category)
     {
-        return view('front.category', $category);
+        return view('front.category', compact('category'));
     }
 }

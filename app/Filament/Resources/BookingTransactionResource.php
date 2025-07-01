@@ -49,13 +49,18 @@ class BookingTransactionResource extends Resource
                                     $set('price', $workshop ? $workshop->price : 0);
                                 }),
 
+                            TextInput::make('price')
+                                ->hidden()
+                                ->default(0)
+                                ->dehydrated(false),
+
                             TextInput::make('quantity')
                                 ->required()
                                 ->numeric()
                                 ->prefix('By People')
                                 ->live()
                                 ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                    $price = $get('price');
+                                    $price = $get('price') ?? 0;
                                     $subTotal = $price * $state;
                                     $totalPpn = $subTotal * 0.12;
                                     $totalAmount = $subTotal + $totalPpn;
@@ -75,7 +80,8 @@ class BookingTransactionResource extends Resource
 
                                     $set('participants', $participants);
                                 })
-                                ->afterStateHydrated(function($state, callable $get, callable $set){
+
+                                ->afterStateHydrated(function ($state, callable $get, callable $set) {
                                     $price = $get('price');
                                     $subTotal = $price * $state;
                                     $totalPpn = $subTotal * 0.12;
@@ -84,72 +90,68 @@ class BookingTransactionResource extends Resource
                                     $set('total_amount', $totalAmount);
                                 }),
                             TextInput::make('total_amount')
-                            ->required()
-                            ->numeric()
-                            ->prefix('IDR')
-                            ->readOnly()
-                            ->helperText('Harga sudah include PPN 12%'),
+                                ->default(fn($record) => $record?->total_amount)
+                                ->required()
+                                ->numeric()
+                                ->prefix('IDR')
+                                ->readOnly()
+                                ->helperText('Harga sudah include PPN 12%'),
 
                             Repeater::make('participants')
-                            ->schema([
-                                Grid::make(2)
                                 ->schema([
-                                    TextInput::make('name')
-                                    ->label('Participant Name')
-                                    ->required(),
-                                    TextInput::make('occupation')     
-                                    ->label('Occupation')
-                                    ->required(),
-                                    TextInput::make('email')     
-                                    ->label('Email')
-                                    ->required(),
-                                ]),
-                            ])
-                            ->columns(1)
-                            ->label('Participant Details'),
-                            ]),
+                                    Grid::make(2)
+                                        ->schema([
+                                            TextInput::make('name')->label('Participant Name')->required(),
+                                            TextInput::make('occupation')->label('Occupation')->required(),
+                                            TextInput::make('email')->label('Email')->required(),
+                                        ]),
+                                ])
+                                ->columns(1)
+                                ->label('Participant Details'),
+                        ]),
+
                     Step::make('Customer Information')
-                    ->schema([
-                        TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
-                        TextInput::make('email')
-                        ->required()
-                        ->maxLength(255),
-                        TextInput::make('phone')
-                        ->required()
-                        ->maxLength(255),
-                        TextInput::make('customer_bank_name')
-                        ->required()
-                        ->maxLength(255),
-                        TextInput::make('customer_bank_account')
-                        ->required()
-                        ->maxLength(255),
-                        TextInput::make('customer_bank_number')
-                        ->required()
-                        ->maxLength(255),
-                        TextInput::make('booking_trx_id')
-                        ->required()
-                        ->maxLength(255),
-                    ]),
+                        ->schema([
+                            TextInput::make('name')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('email')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('phone')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('customer_bank_name')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('customer_bank_account')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('customer_bank_number')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('booking_trx_id')
+                                ->required()
+                                ->maxLength(255),
+                        ]),
                     Step::make('Payment Information')
-                    ->schema([
-                        ToggleButtons::make('is_paid')
-                        ->label('Apakah sudah membayar?')
-                        ->boolean()
-                        ->icons([
-                            true => 'heroicon-o-pencil',
-                            false => 'heroicon-o-clock'
+                        ->schema([
+                            ToggleButtons::make('is_paid')
+                                ->label('Apakah sudah membayar?')
+                                ->boolean()
+                                ->icons([
+                                    true => 'heroicon-o-pencil',
+                                    false => 'heroicon-o-clock'
+                                ])
+                                ->required(),
+                            FileUpload::make('proof')
+                                ->image()
+                                ->required(),
                         ])
-                        ->required(),
-                        FileUpload::make('proof')
-                        ->image()
-                        ->required(),
-                    ])                    
                 ])
-                ->columnSpanFull()
-                ->columns(1)
-                ->skippable()
+                    ->columnSpanFull()
+                    ->columns(1)
+                    ->skippable()
             ]);
     }
 
@@ -160,19 +162,28 @@ class BookingTransactionResource extends Resource
                 ImageColumn::make('workshop.thumbnail'),
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('booking_trx_id')->searchable(),
+                TextColumn::make('total_amount'),
                 IconColumn::make('is_paid')
-                        ->boolean()
-                        ->trueColor('success')
-                        ->falseColor('danger')
-                        ->trueIcon('heroicon-o-check-circle')                                              
-                        ->falseicon('heroicon-o-x-circle')                                              
+                    ->boolean()
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseicon('heroicon-o-x-circle')
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('approve')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn($record) => !$record->is_paid) // hanya tampil kalau belum dibayar
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update(['is_paid' => true]);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
